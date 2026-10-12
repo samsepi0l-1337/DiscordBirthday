@@ -1,6 +1,6 @@
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { GatewayIntentBits, Partials } from 'discord.js';
+import { GatewayIntentBits, MessageFlags, Partials } from 'discord.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createClient,
@@ -43,8 +43,8 @@ function interaction(overrides: Partial<InteractionLike> = {}) {
     commandName: 'send-dm',
     inGuild: vi.fn(() => true),
     memberPermissions: { has: vi.fn((_permission: bigint) => true) },
-    reply: vi.fn(async (_options: { content: string; ephemeral: boolean }) => undefined),
-    deferReply: vi.fn(async (_options: { ephemeral: boolean }) => undefined),
+    reply: vi.fn(async (_options: { content: string; flags: number }) => undefined),
+    deferReply: vi.fn(async (_options: { flags: number }) => undefined),
     editReply: vi.fn(async (_content: string) => undefined),
     ...overrides,
   };
@@ -149,7 +149,7 @@ function deps(members: MemberLike[], configOverrides: Partial<Config> = {}) {
   });
 });
 
-describe('DM handlers', () => {
+ describe('DM handlers', () => {
   it.each([
     ['create', handleDmCreate],
     ['update', handleDmUpdate],
@@ -234,7 +234,7 @@ describe('DM handlers', () => {
   });
 });
 
-describe('client and command registration', () => {
+ describe('client and command registration', () => {
   it('registers the guild command with Administrator permission and DMs disabled', async () => {
     const guild = { commands: { set: vi.fn(async (_data: unknown[]) => undefined) } };
 
@@ -259,7 +259,7 @@ describe('client and command registration', () => {
   });
 });
 
-describe('createSendDmHandler', () => {
+ describe('createSendDmHandler', () => {
   it.each(['outside-guild', 'null-permissions', 'non-admin'] as const)('rejects %s ephemerally without obtaining deps or sending', async (kind) => {
     const d = deps([member('recipient')]);
     const getDeps = vi.fn(async () => d);
@@ -271,7 +271,7 @@ describe('createSendDmHandler', () => {
 
     await createSendDmHandler(getDeps)(caller);
 
-    expect(caller.reply).toHaveBeenCalledExactlyOnceWith({ ephemeral: true, content: expect.any(String) });
+    expect(caller.reply).toHaveBeenCalledExactlyOnceWith({ flags: MessageFlags.Ephemeral, content: expect.any(String) });
     expect(caller.reply.mock.calls[0]![0].content.trim()).not.toBe('');
     expect(getDeps).not.toHaveBeenCalled();
     expect(d.sendDm).not.toHaveBeenCalled();
@@ -304,7 +304,7 @@ describe('createSendDmHandler', () => {
     });
     const caller = interaction();
     const getDeps = vi.fn(async () => {
-      expect(caller.deferReply).toHaveBeenCalledExactlyOnceWith({ ephemeral: true });
+      expect(caller.deferReply).toHaveBeenCalledExactlyOnceWith({ flags: MessageFlags.Ephemeral });
       return d;
     });
 
@@ -343,7 +343,7 @@ describe('createSendDmHandler', () => {
 
     try {
       await handler(concurrent);
-      expect(concurrent.reply).toHaveBeenCalledExactlyOnceWith({ ephemeral: true, content: expect.any(String) });
+      expect(concurrent.reply).toHaveBeenCalledExactlyOnceWith({ flags: MessageFlags.Ephemeral, content: expect.any(String) });
       expect(concurrent.reply.mock.calls[0]![0].content).toMatch(/progress|running|진행|실행|처리/i);
       expect(concurrent.deferReply).not.toHaveBeenCalled();
       expect(concurrent.editReply).not.toHaveBeenCalled();
@@ -357,7 +357,7 @@ describe('createSendDmHandler', () => {
 
     await handler(later);
     expect(getDeps).toHaveBeenCalledTimes(2);
-    expect(later.deferReply).toHaveBeenCalledExactlyOnceWith({ ephemeral: true });
+    expect(later.deferReply).toHaveBeenCalledExactlyOnceWith({ flags: MessageFlags.Ephemeral });
     expect(later.reply).not.toHaveBeenCalled();
     expect(laterDeps.sendDm).toHaveBeenCalledExactlyOnceWith(laterDeps.members[0], laterDeps.config.dmMessage);
     expect(later.editReply).toHaveBeenCalledTimes(1);
@@ -373,13 +373,13 @@ describe('createSendDmHandler', () => {
 
     await handler(failed);
 
-    expect(failed.deferReply).toHaveBeenCalledExactlyOnceWith({ ephemeral: true });
+    expect(failed.deferReply).toHaveBeenCalledExactlyOnceWith({ flags: MessageFlags.Ephemeral });
     expect(failed.editReply).toHaveBeenCalledExactlyOnceWith(expect.stringMatching(/error|failed|오류|실패|member fetch unavailable/i));
     const retry = interaction();
     await handler(retry);
     expect(getDeps).toHaveBeenCalledTimes(2);
     expect(retry.reply).not.toHaveBeenCalled();
-    expect(retry.deferReply).toHaveBeenCalledExactlyOnceWith({ ephemeral: true });
+    expect(retry.deferReply).toHaveBeenCalledExactlyOnceWith({ flags: MessageFlags.Ephemeral });
     expect(d.sendDm).toHaveBeenCalledTimes(1);
     expect(retry.editReply).toHaveBeenCalledTimes(1);
   });
