@@ -60,7 +60,7 @@
 
 - 목록 값은 쉼표로 구분하며, 앞뒤 공백은 무시하고 빈 항목은 버립니다.
 - `EXCLUDE_USER_IDS`는 사용자 ID가 정확히 일치할 때 제외합니다.
-- `EXCLUDE_NAMES`는 멤버의 사용자 ID, 사용자명(username), 전역 표시 이름(global display name), 서버 별명(nickname) 중 하나와 일치하면 제외합니다. 이름 비교는 대소문자를 구분하지 않습니다.
+- `EXCLUDE_NAMES`는 멤버의 사용자명(username), 전역 표시 이름(global display name), 서버 별명(nickname) 중 하나와 일치하면 제외합니다. 이름 비교는 대소문자를 구분하지 않습니다. 사용자 ID로 제외하려면 `EXCLUDE_USER_IDS`에 넣어야 하며, `EXCLUDE_NAMES`에 넣은 ID는 일치로 처리되지 않습니다.
 - 봇 계정은 설정과 관계없이 항상 제외됩니다.
 
 ## 4. 설치, 빌드, 실행, 테스트
