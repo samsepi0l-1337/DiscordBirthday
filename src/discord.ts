@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials } from "discord.js";
+import { Client, GatewayIntentBits, MessageFlags, Partials } from "discord.js";
 import type { ResponseStore } from "./store.js";
 import { isExcluded } from "./config.js";
 import type { Config, MemberLike, SendSummary } from "./types.js";
@@ -38,8 +38,8 @@ export interface InteractionLike {
   commandName: string;
   inGuild(): boolean;
   memberPermissions: { has(perm: bigint): boolean } | null;
-  reply(o: { content: string; ephemeral: boolean }): Promise<unknown>;
-  deferReply(o: { ephemeral: boolean }): Promise<unknown>;
+  reply(o: { content: string; flags: number }): Promise<unknown>;
+  deferReply(o: { flags: number }): Promise<unknown>;
   editReply(content: string): Promise<unknown>;
 }
 
@@ -159,7 +159,7 @@ export function createSendDmHandler(
       !interaction.memberPermissions.has(ADMINISTRATOR)
     ) {
       await interaction.reply({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: "이 명령어는 서버 관리자만 사용할 수 있습니다.",
       });
       return;
@@ -167,7 +167,7 @@ export function createSendDmHandler(
 
     if (running) {
       await interaction.reply({
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
         content: "이미 전송이 진행 중입니다.",
       });
       return;
@@ -175,7 +175,7 @@ export function createSendDmHandler(
 
     running = true;
     try {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       let text: string;
       try {
         const summary = await runSendLoop(await getDeps());
