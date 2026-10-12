@@ -58,15 +58,13 @@ export class ResponseStore {
       existing.content = msg.content;
       existing.editedAt = msg.editedAt;
     } else {
-      const entry = {
+      record.messages.push({
         messageId: msg.messageId,
         content: msg.content,
         sentAt: msg.sentAt,
         editedAt: msg.editedAt,
-      };
-      const index = record.messages.findIndex((m) => m.sentAt > msg.sentAt);
-      if (index === -1) record.messages.push(entry);
-      else record.messages.splice(index, 0, entry);
+      });
+      record.messages.sort((a, b) => (a.sentAt < b.sentAt ? -1 : a.sentAt > b.sentAt ? 1 : 0));
       if (msg.sentAt < record.firstRepliedAt) record.firstRepliedAt = msg.sentAt;
     }
     record.lastUpdatedAt = msg.editedAt;
