@@ -18,6 +18,13 @@ export async function main(): Promise<void> {
   loadEnv();
   const config = loadConfig(process.env);
   const store = await ResponseStore.load(config.responsesPath);
+  const rawSave = store.save.bind(store);
+  let saveQueue: Promise<void> = Promise.resolve();
+  store.save = () => {
+    const run = saveQueue.then(rawSave);
+    saveQueue = run.catch(() => undefined);
+    return run;
+  };
   const client = createClient();
 
   const getDeps = async (): Promise<SendDeps> => {
