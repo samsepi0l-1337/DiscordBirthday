@@ -1,68 +1,69 @@
 export interface Config {
-  token: string;
-  guildId: string;
-  dmMessage: string;
-  excludeUserIds: string[];
-  excludeNames: string[];
-  sendDelayMs: number;
-  responsesPath: string;
-  dryRun: boolean;
+	token: string;
+	guildId: string;
+	dmMessage: string;
+	excludeUserIds: string[];
+	excludeNames: string[];
+	sendDelayMs: number;
+	responsesPath: string;
+	dryRun: boolean;
 }
 
 export interface MemberLike {
-  id: string;
-  username: string;
-  globalName: string | null;
-  nickname: string | null;
-  bot: boolean;
+	id: string;
+	username: string;
+	globalName: string | null;
+	nickname: string | null;
+	bot: boolean;
 }
 
 export interface UserInfo {
-  userId: string;
-  username: string;
-  displayName: string;
+	userId: string;
+	username: string;
+	displayName: string;
 }
 
 export interface IncomingMessage {
-  messageId: string;
-  content: string;
-  sentAt: string;
+	messageId: string;
+	content: string;
+	sentAt: string;
 }
 
 export interface EditedMessage extends IncomingMessage {
-  editedAt: string;
+	editedAt: string;
 }
 
 export interface ResponseMessage {
-  messageId: string;
-  content: string;
-  sentAt: string;
-  editedAt: string | null;
+	messageId: string;
+	content: string;
+	sentAt: string;
+	editedAt: string | null;
 }
 
 export interface UserResponse {
-  userId: string;
-  username: string;
-  displayName: string;
-  firstRepliedAt: string;
-  lastUpdatedAt: string;
-  messages: ResponseMessage[];
+	userId: string;
+	username: string;
+	displayName: string;
+	firstRepliedAt: string;
+	lastUpdatedAt: string;
+	messages: ResponseMessage[];
 }
 
 export interface SendRecord {
-  status: "sent" | "failed";
-  at: string;
-  reason?: string;
+	status: "sent" | "failed";
+	at: string;
+	reason?: string;
+	channelId?: string;
 }
 
 export interface StoreData {
-  responses: Record<string, UserResponse>;
-  sendState: Record<string, SendRecord>;
+	responses: Record<string, UserResponse>;
+	sendState: Record<string, SendRecord>;
 }
 
 export interface SendSummary {
-  sent: number;
-  skipped: number;
-  failed: number;
-  dryRun: number;
+	sent: number;
+	skipped: number;
+	failed: number;
+	dryRun: number;
 }
