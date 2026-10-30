@@ -34,7 +34,7 @@ jobs:
           python3 -I - <<'PY'
           import json, os, urllib.request
           repo, pr = os.environ["REPO"], os.environ["PR"]
-          MAX_DIFF, MAX_OUT = 150_000, 3000
+          MAX_DIFF, MAX_OUT = 150_000, 8000
 
           def call(url, data=None, headers=None):
               req = urllib.request.Request(url, data=data, headers=headers or {})
@@ -61,6 +61,10 @@ jobs:
               "x-api-key": os.environ["ANTHROPIC_API_KEY"],
               "anthropic-version": "2023-06-01", "content-type": "application/json"}))
           text = "".join(b.get("text", "") for b in out["content"] if b.get("type") == "text")
+          if not text:
+              raise SystemExit("empty response: stop_reason=" + str(out.get("stop_reason")))
+          if out.get("stop_reason") == "max_tokens":
+              note += "\n\n_Review may be incomplete: the output limit was reached._"
           comment = json.dumps({"body": "### Claude review (API credit)\n\n" + text + note}).encode()
           call(f"{base}/issues/{pr}/comments", comment, {**gh, "content-type": "application/json"})
           PY
